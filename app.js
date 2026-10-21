@@ -1,5 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
+const assetRevision = new URL(document.currentScript.src).searchParams.get('v');
+const assetUrl = path => assetRevision ? `${path}?v=${encodeURIComponent(assetRevision)}` : path;
 let data, map, routeLayer, networkLayer, crossingLayer, bailoutLayer, endLayer, mileLayer;
 let selectedRoute = new URLSearchParams(location.search).get('route');
 let chosen = ['overview','parking','ridge','tour'].includes(selectedRoute) ? selectedRoute : 'overview';
@@ -23,7 +25,7 @@ function renderRoute(fit=true){
     const line=L.polyline(points,{color:'#7138ab',weight:5,opacity:1}).addTo(routeLayer);routeBounds.extend(line.getBounds());
   }
   const overview=chosen==='overview', tour=chosen==='tour';
-  $('route-sketch').src=tour?'tour-sketch.svg':'route-sketch.svg';
+  $('route-sketch').src=assetUrl(tour?'tour-sketch.svg':'route-sketch.svg');
   const total=r.total_miles ?? r.round_trip_miles;
   $('distance').textContent=total.toFixed(1);
   $('distance-label').textContent=overview?'connected trail miles':tour?'miles including retracing':'miles out & back';
@@ -82,7 +84,7 @@ function renderRoute(fit=true){
 
 async function start(){
   try{
-    const response=await fetch('route-data.json');if(!response.ok)throw new Error('Route data unavailable');data=await response.json();
+    const response=await fetch(assetUrl('route-data.json'));if(!response.ok)throw new Error('Route data unavailable');data=await response.json();
     map=L.map('map',{scrollWheelZoom:false});
     const topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Basemap © Esri, USGS, OpenStreetMap contributors'}).addTo(map);
     const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'});
