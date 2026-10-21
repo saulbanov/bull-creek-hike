@@ -1,5 +1,8 @@
 /* Keep the route legible when the interactive map cannot load. */
 .map-wrap { height: 560px; }
+.route-switch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: 1; }
+.route-switch button { width: 100%; white-space: normal; }
+.gap-marker { width: 26px; height: 26px; border-radius: 50%; background: #9c4a0e; color: white; border: 2px solid white; box-shadow: 0 1px 6px #0005; display: grid; place-items: center; font-size: 15px; font-weight: 800; }
 .map-wrap > #route-sketch {
   position: absolute;
   inset: 0;
