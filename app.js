@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-let data, map, routeLayer, networkLayer, crossingLayer, endLayer, mileLayer;
+let data, map, routeLayer, networkLayer, crossingLayer, bailoutLayer, endLayer, mileLayer;
 let chosen = new URLSearchParams(location.search).get('route') === 'parking' ? 'parking' : 'ridge';
 let gpsWatch = null, gpsMarker = null, gpsAccuracy = null, satelliteOn = false;
 const milesBetween = (a,b) => {const rad=x=>x*Math.PI/180, lat=rad(b[1]-a[1]),lon=rad(b[0]-a[0]);return 3958.7613*2*Math.asin(Math.sqrt(Math.sin(lat/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(lon/2)**2));};
@@ -10,7 +10,7 @@ const icon = (className, text='',size=[28,28]) => L.divIcon({className:'',html:`
 
 function renderRoute(fit=true){
   const r=data.routes[chosen];
-  routeLayer.clearLayers();crossingLayer.clearLayers();endLayer.clearLayers();mileLayer.clearLayers();
+  routeLayer.clearLayers();crossingLayer.clearLayers();bailoutLayer.clearLayers();endLayer.clearLayers();mileLayer.clearLayers();
   L.polyline(r.coordinates.map(latlng),{color:'#fffef8',weight:9,opacity:.9}).addTo(routeLayer);
   const line=L.polyline(r.coordinates.map(latlng),{color:'#7138ab',weight:5,opacity:1}).addTo(routeLayer);
   const round=r.round_trip_miles;
@@ -30,6 +30,21 @@ function renderRoute(fit=true){
     card.innerHTML=`<div class="mile">${i+1} / ABOUT MILE ${c.mile.toFixed(1)} OUTBOUND</div><h3>${c.title}</h3><div class="status">Possible ford · structure unverified</div><p>${chosen==='ridge'?'You encounter this location twice on the out-and-back.':'You encounter this location once outbound and again on your return.'} No live depth or current reading is available at this pin.</p><button type="button">Show crossing on map ↑</button>`;
     card.querySelector('button').addEventListener('click',()=>{map.setView(latlng(c.coordinates),17);m.openPopup();$('map').scrollIntoView({behavior:'smooth',block:'center'});});
     $('crossings').appendChild(card);
+  });
+  $('bailouts').replaceChildren();
+  r.bailouts.forEach((b,i)=>{
+    const isStart=b.id==='lakewood-start';
+    const m=L.marker(latlng(b.coordinates),{icon:icon('bailout-marker',isStart?'↩':'R')}).addTo(bailoutLayer);
+    m.bindPopup(`<strong>${b.title}</strong>About mile ${b.mile.toFixed(1)} outbound.<small>${b.note}</small>`);
+    const card=document.createElement('article');card.className='bailout-card';
+    const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${b.coordinates[1]},${b.coordinates[0]}`)}`;
+    const uber='https://m.uber.com/ul/?action=setPickup&pickup=my_location';
+    const crossingWarning=isStart
+      ? 'If the first possible ford is not passable, this is the exit: return here.'
+      : 'This exit comes after the second possible ford; it does not bypass high water.';
+    card.innerHTML=`<div class="mile">${i+1} / ABOUT MILE ${b.mile.toFixed(1)} OUTBOUND</div><h3>${b.title}</h3><p>${crossingWarning} ${b.note}</p><div class="bailout-actions"><a href="${maps}" target="_blank" rel="noopener">Show access pin ↗</a><a href="${uber}" target="_blank" rel="noopener">Open Uber ↗</a><button type="button">Show on map ↑</button></div>`;
+    card.querySelector('button').addEventListener('click',()=>{map.setView(latlng(b.coordinates),17);m.openPopup();$('map').scrollIntoView({behavior:'smooth',block:'center'});});
+    $('bailouts').appendChild(card);
   });
   [[r.coordinates[0],'Start · Lakewood Drive'],[r.coordinates.at(-1),r.label]].forEach(([c,label])=>L.marker(latlng(c),{icon:icon('end-marker','',[22,22])}).bindPopup(`<strong>${label}</strong>${c[1].toFixed(5)}, ${c[0].toFixed(5)}<small>Mapped trail point; parking approach is not surveyed.</small>`).addTo(endLayer));
   let travelled=0,next=1;
@@ -52,7 +67,7 @@ async function start(){
     const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'});
     L.geoJSON(data.creeks,{style:{color:'#2186b1',weight:3,opacity:.8},onEachFeature:(f,l)=>l.bindPopup('Bull Creek · OpenStreetMap centerline, September 2026. This line does not show current water extent.')}).addTo(map);
     networkLayer=L.geoJSON(data.network,{style:{color:'#778a70',weight:2,opacity:.65},onEachFeature:(f,l)=>l.bindPopup(f.properties.name)}).addTo(map);
-    routeLayer=L.layerGroup().addTo(map);mileLayer=L.layerGroup().addTo(map);crossingLayer=L.layerGroup().addTo(map);endLayer=L.layerGroup().addTo(map);
+    routeLayer=L.layerGroup().addTo(map);mileLayer=L.layerGroup().addTo(map);crossingLayer=L.layerGroup().addTo(map);bailoutLayer=L.layerGroup().addTo(map);endLayer=L.layerGroup().addTo(map);
     data.sources.forEach(s=>{const li=document.createElement('li');const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener';a.textContent=s.title;li.append(a,` · ${s.date}`);$('source-list').append(li);});
     for(const key of ['ridge','parking'])$(`route-${key}`).addEventListener('click',()=>{chosen=key;renderRoute();});
     $('fit').addEventListener('click',()=>renderRoute());

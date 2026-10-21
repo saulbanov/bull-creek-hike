@@ -8,6 +8,7 @@
   <title>Bull Creek · A hike over the ridge</title>
   <link rel="stylesheet" href="vendor/leaflet.css">
   <link rel="stylesheet" href="style.css">
+  <style>.bailout-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #dce1d7;padding-top:22px;margin-top:24px}.bailout-heading h2{margin:0}.bailout-card{background:#f1f6f2;border:1px solid #cbdacd;border-radius:8px;padding:16px;margin-top:12px}.bailout-card .mile{font-size:10px;letter-spacing:.08em;font-weight:750;color:#356553}.bailout-card h3{font-size:14px;margin:6px 0}.bailout-card p{font-size:12px;color:#4e6557;line-height:1.5;margin:8px 0}.bailout-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.bailout-actions a{font-size:11px;color:#153f34}.bailout-actions button{padding:5px 0;font-size:11px;color:#153f34;border:0;background:none;text-decoration:underline;min-height:36px}.bailout-marker{width:29px;height:29px;border-radius:50%;background:#276452;border:3px solid white;box-shadow:0 1px 6px #0005;display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:800}</style>
   <script defer src="vendor/leaflet.js"></script>
   <script defer src="app.js"></script>
 </head>
@@ -62,6 +63,9 @@
         <p class="small">These pins mark intersections of the City trail line and the mapped creek channel. Neither crossing has been field checked for a bridge, stepping stones, depth or current.</p>
         <div id="crossings"></div>
         <div class="turnback-note"><strong>You need to cross again on the way back.</strong> If the creek is flooded, rising or moving fast, turn around. The longer route is not a way around the first crossing. <a href="https://www.weather.gov/safety/flood-during" target="_blank" rel="noopener">NWS flood guidance ↗</a></div>
+        <div class="bailout-heading"><h2>Road exits &amp; ride pickup</h2><span class="evidence-label">MAPPED ACCESS</span></div>
+        <p class="small">Use these to decide before you commit to a crossing. They are mapped access locations, not inspected pull-offs or guaranteed rideshare pickup spots.</p>
+        <div id="bailouts"></div>
       </aside>
     </section>
 
@@ -77,7 +81,7 @@
     <section class="sources">
       <details><summary>Sources, route method & what remains unchecked</summary>
         <p>City trail geometry was captured September 29, 2026; OpenStreetMap creek geometry September 28. Distances come from a calculated route along those lines, with trail vertices within two metres joined. The start is approximate; parking approaches have not been walked.</p>
-        <p>The roadside option ends at the City’s mapped St. Edward’s access point, not a surveyed parking bay. The shorter option ends at the preserve-to-park connection on the ridge.</p>
+        <p>The roadside option ends at the City’s mapped St. Edward’s access point, not a surveyed parking bay. The shorter option ends at the preserve-to-park connection on the ridge. The site marks only the road exits supported by the route data; verify a safe, legal pickup point on the ground.</p>
         <p>Possible fords are geometric intersections, not confirmed crossing structures. Minor tributaries, gullies, washouts, current road conditions, trail signs and current passage have not been surveyed. Follow signs on the ground. Do not use a road detour around high water based on this map.</p>
         <p>Time estimates assume two miles an hour plus 30–60 minutes of stops; your pace and creek conditions can change that considerably. Trail status is a dated check, not a live feed.</p>
         <ul id="source-list"></ul>
