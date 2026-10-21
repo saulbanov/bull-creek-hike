@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#153f34">
+  <meta name="description" content="A walking map from Bull Creek District Park through Forest Ridge to St. Edward’s, with possible creek fords, mileage, GPX downloads and access rules.">
+  <title>Bull Creek · A hike over the ridge</title>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="vendor/leaflet.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <a class="brand" href="#top" aria-label="Bull Creek hike home"><span class="brand-mark" aria-hidden="true">⌁</span> BULL CREEK <span class="brand-sub">FIELD MAP</span></a>
+    <button id="share" class="quiet-button">Share hike ↗</button>
+  </header>
+  <main id="top">
+    <section class="intro">
+      <div class="eyebrow">LAKEWOOD DRIVE → FOREST RIDGE → ST. EDWARD’S</div>
+      <h1>A hike over the ridge.</h1>
+      <p class="dek">Follow Bull Creek north, then climb into the preserve. Choose a ridge turnaround or continue across the creek to St. Edward’s roadside access.</p>
+      <div class="stats" aria-live="polite">
+        <div><strong id="distance">—</strong><span>miles out & back</span></div>
+        <div><strong id="time">—</strong><span>hours, estimated with stops</span></div>
+        <div><strong id="crossing-count">—</strong><span id="crossing-label">possible ford, each way</span></div>
+        <div><strong>On foot</strong><span>no dogs in Forest Ridge</span></div>
+      </div>
+    </section>
+
+    <section class="planner" aria-label="Route planner">
+      <div class="map-column">
+        <div class="map-toolbar">
+          <div class="route-switch" role="group" aria-label="Choose turnaround">
+            <button id="route-ridge" class="selected" aria-pressed="true">Ridge turnaround</button>
+            <button id="route-parking" aria-pressed="false">To roadside access</button>
+          </div>
+          <button id="fit" class="map-button" title="Show whole route">Fit route</button>
+        </div>
+        <div class="map-wrap">
+          <div id="map" aria-label="Interactive hiking route map"></div>
+          <div class="map-tools">
+            <button id="locate" class="map-button">◎ My location</button>
+            <button id="basemap" class="map-button" aria-pressed="false">Satellite</button>
+          </div>
+        </div>
+        <div class="legend"><span><i class="line route-line"></i>Chosen route</span><span><i class="line creek-line"></i>Bull Creek</span><span><i class="ford-dot"></i>Possible ford</span><label><input id="show-network" type="checkbox" checked> Other mapped trails</label></div>
+        <p id="location-note" class="map-note" role="status">Location stays in your browser. The map does not record or upload your position.</p>
+        <div class="actions">
+          <a id="gpx" class="primary-button" href="bull-creek-ridge.gpx" download>↓ Download route GPX</a>
+          <a class="secondary-button" href="https://www.google.com/maps/search/?api=1&query=Bull+Creek+District+Park+6701+Lakewood+Drive+Austin" target="_blank" rel="noopener">Directions to start ↗</a>
+        </div>
+      </div>
+
+      <aside class="trail-notes">
+        <div class="section-label">THE PLAN</div>
+        <h2 id="plan-title">Turn around on the ridge</h2>
+        <p id="plan-description"></p>
+        <div class="steps" id="steps"></div>
+        <div class="crossing-heading"><h2>Where you may ford</h2><span class="evidence-label">MAP INFERENCE</span></div>
+        <p class="small">These pins mark intersections of the City trail line and the mapped creek channel. Neither crossing has been field checked for a bridge, stepping stones, depth or current.</p>
+        <div id="crossings"></div>
+        <div class="turnback-note"><strong>You need to cross again on the way back.</strong> If the creek is flooded, rising or moving fast, turn around. The longer route is not a way around the first crossing. <a href="https://www.weather.gov/safety/flood-during" target="_blank" rel="noopener">NWS flood guidance ↗</a></div>
+      </aside>
+    </section>
+
+    <section class="before-you-go">
+      <div class="section-label">BEFORE YOU GO</div>
+      <div class="info-grid">
+        <article><span class="card-number">01</span><h2>Check the water</h2><p>The USGS gauge at Loop 360 gives creek context. It does not measure the depth or footing at either ford, and no crossing threshold has been established here.</p><a href="https://waterdata.usgs.gov/monitoring-location/USGS-08154700/" target="_blank" rel="noopener">Bull Creek gauge ↗</a><a href="https://forecast.weather.gov/MapClick.php?lat=30.39&lon=-97.79" target="_blank" rel="noopener">Forecast & alerts ↗</a><a href="https://www.atxfloods.com/" target="_blank" rel="noopener">Road flood closures ↗</a></article>
+        <article><span class="card-number">02</span><h2>Know the preserve rules</h2><p>Forest Ridge allows hikers in groups of 10 or fewer. No dogs, bikes, horses, camping or campfires. Stay on the authorized trail; gates may close temporarily.</p><p class="dated-status">Forest Ridge: OPEN when checked Oct. 21, 2026. This page does not fetch live trail status.</p><a href="https://www.austintexas.gov/wildlandtrails" target="_blank" rel="noopener">Check current trail status ↗</a><a href="https://www.austintexas.gov/water/programs/bull-creek-preserve" target="_blank" rel="noopener">City rules & permit information ↗</a></article>
+        <article><span class="card-number">03</span><h2>Pack for the ridge</h2><p>Expect rocky climbs and uneven limestone. Carry your water: the City lists no running water or restrooms in Forest Ridge. Bring footwear with grip, sun protection and a light if your return may run late.</p><p>Download the GPX into a hiking app before leaving. This page’s basemap needs a connection; the GPX contains a calculated route, not a recorded hike.</p><a href="https://www.austintexas.gov/parks/locations/park-directory" target="_blank" rel="noopener">Start: 6701 Lakewood Drive ↗</a></article>
+      </div>
+    </section>
+
+    <section class="sources">
+      <details><summary>Sources, route method & what remains unchecked</summary>
+        <p>City trail geometry was captured September 29, 2026; OpenStreetMap creek geometry September 28. Distances come from a calculated route along those lines, with trail vertices within two metres joined. The start is approximate; parking approaches have not been walked.</p>
+        <p>The roadside option ends at the City’s mapped St. Edward’s access point, not a surveyed parking bay. The shorter option ends at the preserve-to-park connection on the ridge.</p>
+        <p>Possible fords are geometric intersections, not confirmed crossing structures. Minor tributaries, gullies, washouts, current road conditions, trail signs and current passage have not been surveyed. Follow signs on the ground. Do not use a road detour around high water based on this map.</p>
+        <p>Time estimates assume two miles an hour plus 30–60 minutes of stops; your pace and creek conditions can change that considerably. Trail status is a dated check, not a live feed.</p>
+        <ul id="source-list"></ul>
+        <a href="route-data.json">Download source IDs, hashes, method & route data</a>
+      </details>
+      <p class="footer-note">A walking plan for Bull Creek. Prepared October 21, 2026. Creek map data © OpenStreetMap contributors, ODbL. Trail geometry: City of Austin / Austin Water.</p>
+    </section>
+  </main>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
