@@ -83,6 +83,8 @@ async function start(){
     map=L.map('map',{scrollWheelZoom:false});
     const topo=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Basemap © Esri, USGS, OpenStreetMap contributors'}).addTo(map);
     const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'});
+    const hideSketch=()=>$('route-sketch').classList.add('map-ready');
+    topo.on('load',hideSketch);satellite.on('load',hideSketch);
     L.geoJSON(data.creeks,{style:{color:'#2186b1',weight:3,opacity:.8},onEachFeature:(f,l)=>l.bindPopup('Bull Creek · OpenStreetMap centerline, September 2026. This line does not show current water extent.')}).addTo(map);
     networkLayer=L.geoJSON(data.network,{style:{color:'#778a70',weight:2,opacity:.65},onEachFeature:(f,l)=>l.bindPopup(f.properties.name)}).addTo(map);
     routeLayer=L.layerGroup().addTo(map);mileLayer=L.layerGroup().addTo(map);crossingLayer=L.layerGroup().addTo(map);bailoutLayer=L.layerGroup().addTo(map);endLayer=L.layerGroup().addTo(map);
@@ -92,7 +94,7 @@ async function start(){
     $('show-network').addEventListener('change',e=>e.target.checked?networkLayer.addTo(map):map.removeLayer(networkLayer));
     $('basemap').addEventListener('click',()=>{satelliteOn=!satelliteOn;if(satelliteOn){map.removeLayer(topo);satellite.addTo(map);}else{map.removeLayer(satellite);topo.addTo(map);} $('basemap').textContent=satelliteOn?'Topo map':'Satellite';$('basemap').setAttribute('aria-pressed',String(satelliteOn));});
     renderRoute();
-  }catch(error){$('plan-description').textContent='The map could not load. Reload with a connection, or use the GPX download.';$('location-note').textContent=error.message;console.error(error);}
+  }catch(error){$('plan-description').textContent='The interactive map could not load. The trail graphic at left still shows the City trail geometry, creek, crossings and mapped access points.';$('location-note').textContent='Offline trail graphic shown. '+error.message;console.error(error);}
 }
 
 $('share').addEventListener('click',async()=>{
