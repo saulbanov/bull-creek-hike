@@ -3,8 +3,10 @@
 https://saulbanov.github.io/bull-creek-hike/
 
 A phone-friendly walking plan from Bull Creek District Park on Lakewood Drive through
-Forest Ridge to St. Edward’s Park. Choose a 7.4-mile ridge out-and-back or an 8.8-mile
-out-and-back to the City’s mapped roadside access point. Distances are approximate.
+Forest Ridge to St. Edward’s Park. Start with a color-coded 12.9-mile connected-network
+overview, then choose a 9.9-mile out-and-back to the farthest City-mapped road exit or a
+7.4-mile ridge turnaround. The overview gives context for choosing a hike; it is not a
+continuous 12.9- or 15-mile through-hike. Distances are approximate.
 
 Includes possible creek-crossing pins, mile markers, GPX downloads, optional device
 location, topo and satellite basemaps, and links to current trail status, weather and

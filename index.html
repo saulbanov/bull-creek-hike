@@ -21,12 +21,12 @@
     <section class="intro">
       <div class="eyebrow">LAKEWOOD DRIVE → FOREST RIDGE → ST. EDWARD’S</div>
       <h1>A hike over the ridge.</h1>
-      <p class="dek">Follow Bull Creek north, then climb into the preserve. Choose a ridge turnaround or continue across the creek to St. Edward’s roadside access.</p>
+      <p class="dek">Follow Bull Creek north, then climb into the preserve. The connected City trail map holds about 12.9 miles of trails, but its farthest road exit is 5.0 miles from Lakewood. A 15-mile day needs side spurs and retracing; it is not a single through-hike.</p>
       <div class="stats" aria-live="polite">
-        <div><strong id="distance">—</strong><span>miles out & back</span></div>
-        <div><strong id="time">—</strong><span>hours, estimated with stops</span></div>
+        <div><strong id="distance">—</strong><span id="distance-label">miles out &amp; back</span></div>
+        <div><strong id="time">—</strong><span id="time-label">hours, estimated with stops</span></div>
         <div><strong id="crossing-count">—</strong><span id="crossing-label">possible ford, each way</span></div>
-        <div><strong>On foot</strong><span>no dogs in Forest Ridge</span></div>
+        <div><strong id="network-miles">—</strong><span>mapped trail miles; not one route</span></div>
       </div>
     </section>
 
@@ -34,8 +34,9 @@
       <div class="map-column">
         <div class="map-toolbar">
           <div class="route-switch" role="group" aria-label="Choose turnaround">
-            <button id="route-ridge" class="selected" aria-pressed="true">Ridge turnaround</button>
-            <button id="route-parking" aria-pressed="false">To roadside access</button>
+            <button id="route-overview" class="selected" aria-pressed="true">Network overview</button>
+            <button id="route-parking" aria-pressed="false">North road exit</button>
+            <button id="route-ridge" aria-pressed="false">Ridge turnaround</button>
           </div>
           <button id="fit" class="map-button" title="Show whole route">Fit route</button>
         </div>
@@ -46,7 +47,7 @@
             <button id="basemap" class="map-button" aria-pressed="false">Satellite</button>
           </div>
         </div>
-        <div class="legend"><span><i class="line route-line"></i>Chosen route</span><span><i class="line creek-line"></i>Bull Creek</span><span><i class="ford-dot"></i>Possible ford</span><label><input id="show-network" type="checkbox" checked> Other mapped trails</label></div>
+        <div class="legend"><span><i class="line route-line"></i>Route / color-coded legs</span><span><i class="line creek-line"></i>Bull Creek</span><span><i class="ford-dot"></i>Possible ford</span><label><input id="show-network" type="checkbox" checked> Other mapped trails</label></div>
         <p id="location-note" class="map-note" role="status">Location stays in your browser. The map does not record or upload your position.</p>
         <div class="actions">
           <a id="gpx" class="primary-button" href="bull-creek-ridge.gpx" download>↓ Download route GPX</a>
@@ -81,7 +82,7 @@
     <section class="sources">
       <details><summary>Sources, route method & what remains unchecked</summary>
         <p>City trail geometry was captured September 29, 2026; OpenStreetMap creek geometry September 28. Distances come from a calculated route along those lines, with trail vertices within two metres joined. The start is approximate; parking approaches have not been walked.</p>
-        <p>The roadside option ends at the City’s mapped St. Edward’s access point, not a surveyed parking bay. The shorter option ends at the preserve-to-park connection on the ridge. The site marks only the road exits supported by the route data; verify a safe, legal pickup point on the ground.</p>
+        <p>The longer option ends at the farthest City-mapped St. Edward’s access point in the connected network, not a surveyed parking bay. The shorter option ends at the preserve-to-park connection on the ridge. The 12.9-mile network figure counts branches once; it is not a prebuilt 12.9- or 15-mile route. The site marks only the road exits supported by the route data; verify a safe, legal pickup point on the ground.</p>
         <p>Possible fords are geometric intersections, not confirmed crossing structures. Minor tributaries, gullies, washouts, current road conditions, trail signs and current passage have not been surveyed. Follow signs on the ground. Do not use a road detour around high water based on this map.</p>
         <p>Time estimates assume two miles an hour plus 30–60 minutes of stops; your pace and creek conditions can change that considerably. Trail status is a dated check, not a live feed.</p>
         <ul id="source-list"></ul>

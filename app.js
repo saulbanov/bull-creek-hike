@@ -1,7 +1,8 @@
 'use strict';
 const $ = id => document.getElementById(id);
 let data, map, routeLayer, networkLayer, crossingLayer, bailoutLayer, endLayer, mileLayer;
-let chosen = new URLSearchParams(location.search).get('route') === 'parking' ? 'parking' : 'ridge';
+let selectedRoute = new URLSearchParams(location.search).get('route');
+let chosen = ['overview','parking','ridge'].includes(selectedRoute) ? selectedRoute : 'overview';
 let gpsWatch = null, gpsMarker = null, gpsAccuracy = null, satelliteOn = false;
 const milesBetween = (a,b) => {const rad=x=>x*Math.PI/180, lat=rad(b[1]-a[1]),lon=rad(b[0]-a[0]);return 3958.7613*2*Math.asin(Math.sqrt(Math.sin(lat/2)**2+Math.cos(rad(a[1]))*Math.cos(rad(b[1]))*Math.sin(lon/2)**2));};
 const latlng = c => [c[1],c[0]];
@@ -11,23 +12,38 @@ const icon = (className, text='',size=[28,28]) => L.divIcon({className:'',html:`
 function renderRoute(fit=true){
   const r=data.routes[chosen];
   routeLayer.clearLayers();crossingLayer.clearLayers();bailoutLayer.clearLayers();endLayer.clearLayers();mileLayer.clearLayers();
-  L.polyline(r.coordinates.map(latlng),{color:'#fffef8',weight:9,opacity:.9}).addTo(routeLayer);
-  const line=L.polyline(r.coordinates.map(latlng),{color:'#7138ab',weight:5,opacity:1}).addTo(routeLayer);
-  const round=r.round_trip_miles;
-  $('distance').textContent=round.toFixed(1);
-  const low=(round/2+.5).toFixed(1),high=(round/2+1).toFixed(1);
-  $('time').textContent=`${low}–${high}`;
+  const routeBounds=L.latLngBounds([]);
+  if(r.legs){
+    r.legs.forEach(leg=>leg.parts.forEach(part=>{
+      const points=part.map(latlng);L.polyline(points,{color:'#fffef8',weight:10,opacity:.92}).addTo(routeLayer);
+      const line=L.polyline(points,{color:leg.color,weight:5,opacity:1}).bindPopup(`<strong>${leg.label}</strong>${leg.miles.toFixed(1)} miles`);line.addTo(routeLayer);routeBounds.extend(line.getBounds());
+    }));
+  }else{
+    const points=r.coordinates.map(latlng);L.polyline(points,{color:'#fffef8',weight:9,opacity:.9}).addTo(routeLayer);
+    const line=L.polyline(points,{color:'#7138ab',weight:5,opacity:1}).addTo(routeLayer);routeBounds.extend(line.getBounds());
+  }
+  const overview=chosen==='overview';
+  const total=r.total_miles ?? r.round_trip_miles;
+  $('distance').textContent=total.toFixed(1);
+  $('distance-label').textContent=overview?'connected trail miles':'miles out & back';
+  const low=(total/2+.5).toFixed(1),high=(total/2+1).toFixed(1);
+  $('time').textContent=overview?'—':`${low}–${high}`;
+  $('time-label').textContent=overview?'choose a route for time':'hours, estimated with stops';
   $('crossing-count').textContent=r.crossings.length;
   $('crossing-label').textContent=r.crossings.length===1?'possible ford, each way':'possible fords, each way';
-  $('plan-title').textContent=chosen==='ridge'?'Turn around on the ridge':'Continue to roadside access';
-  $('plan-description').textContent=chosen==='ridge'?'Reach the St. Edward’s side of the ridge and return the same way. This skips the additional Bull Creek crossing on the descent toward the roadside access.':'Descend into St. Edward’s and continue to the City’s access point on Spicewood Springs Road. This adds a second possible Bull Creek ford before the turnaround.';
-  $('steps').innerHTML=`<div class="step"><b>Start</b><span>Bull Creek District Park, Lakewood Drive. Trail-start pin is approximate.</span></div><div class="step"><b>~0.7 mi</b><span>Crossing candidate near Forest Ridge. Follow the preserve route uphill.</span></div>${chosen==='parking'?'<div class="step"><b>~3.7 mi</b><span>Reach the ridge connection into St. Edward’s.</span></div>':''}${chosen==='parking'?`<div class="step"><b>~4.1 mi</b><span>Second crossing candidate in St. Edward’s.</span></div>`:''}<div class="step"><b>${r.one_way_miles.toFixed(1)} mi</b><span>${chosen==='ridge'?'Ridge turnaround':'City roadside-access point'}. Retrace the route to Lakewood Drive.</span></div>`;
+  $('network-miles').textContent=data.network_miles.toFixed(1);
+  $('plan-title').textContent=overview?'Broader trail network':chosen==='ridge'?'Turn around on the ridge':'Continue to north road exit';
+  $('plan-description').textContent=overview?'The colors distinguish the City’s three mapped trail systems. This is an overview, not a prescribed long hike: choose the ridge or north-road route above, then use the color key to see what branches remain.':chosen==='ridge'?'Reach the St. Edward’s side of the ridge and return the same way. This skips the additional Bull Creek crossing on the descent toward the roadside access.':'Descend into St. Edward’s and continue to the farthest City-mapped road access in the connected network. This adds a second possible Bull Creek ford before the turnaround.';
+  $('steps').innerHTML=overview
+    ? r.legs.map((leg,i)=>`<div class="step"><b><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${leg.color};margin-right:4px"></i>Map ${i+1}</b><span><strong>City lists ${leg.miles.toFixed(1)} mi</strong> · ${leg.label}</span></div>`).join('')
+    : `<div class="step"><b>Start</b><span>Bull Creek District Park, Lakewood Drive. Trail-start pin is approximate.</span></div><div class="step"><b>~0.7 mi</b><span>Crossing candidate near Forest Ridge. Follow the preserve route uphill.</span></div>${chosen==='parking'?'<div class="step"><b>~3.7 mi</b><span>Reach the ridge connection into St. Edward’s.</span></div>':''}${chosen==='parking'?`<div class="step"><b>~4.1 mi</b><span>Second crossing candidate in St. Edward’s.</span></div><div class="step"><b>~4.3 mi</b><span>City-mapped south roadside access: a bailout point, not a verified pickup bay.</span></div>`:''}<div class="step"><b>${r.one_way_miles.toFixed(1)} mi</b><span>${chosen==='ridge'?'Ridge turnaround':'Farthest City-mapped north roadside access'}. Retrace the route to Lakewood Drive.</span></div>`;
   $('crossings').replaceChildren();
   r.crossings.forEach((c,i)=>{
     const m=L.marker(latlng(c.coordinates),{icon:icon('ford-marker','≈')}).addTo(crossingLayer);
     m.bindPopup(`<strong>${i+1}. ${c.title}</strong>About mile ${c.mile.toFixed(1)} outbound.<small>${c.status}. Depth and current are not measured here.</small>`);
     const card=document.createElement('article');card.className='crossing-card';
-    card.innerHTML=`<div class="mile">${i+1} / ABOUT MILE ${c.mile.toFixed(1)} OUTBOUND</div><h3>${c.title}</h3><div class="status">Possible ford · structure unverified</div><p>${chosen==='ridge'?'You encounter this location twice on the out-and-back.':'You encounter this location once outbound and again on your return.'} No live depth or current reading is available at this pin.</p><button type="button">Show crossing on map ↑</button>`;
+    const crossingText=overview?'These are candidates on the northbound connection, not a complete inventory of every crossing in the overview. No live depth or current reading is available at either pin.':chosen==='ridge'?'You encounter this location twice on the out-and-back. No live depth or current reading is available at this pin.':'You encounter this location once outbound and again on your return. No live depth or current reading is available at this pin.';
+    card.innerHTML=`<div class="mile">${i+1} / ABOUT MILE ${c.mile.toFixed(1)} ON THE NORTHBOUND LEG</div><h3>${c.title}</h3><div class="status">Possible ford · structure unverified</div><p>${crossingText}</p><button type="button">Show crossing on map ↑</button>`;
     card.querySelector('button').addEventListener('click',()=>{map.setView(latlng(c.coordinates),17);m.openPopup();$('map').scrollIntoView({behavior:'smooth',block:'center'});});
     $('crossings').appendChild(card);
   });
@@ -46,17 +62,19 @@ function renderRoute(fit=true){
     card.querySelector('button').addEventListener('click',()=>{map.setView(latlng(b.coordinates),17);m.openPopup();$('map').scrollIntoView({behavior:'smooth',block:'center'});});
     $('bailouts').appendChild(card);
   });
-  [[r.coordinates[0],'Start · Lakewood Drive'],[r.coordinates.at(-1),r.label]].forEach(([c,label])=>L.marker(latlng(c),{icon:icon('end-marker','',[22,22])}).bindPopup(`<strong>${label}</strong>${c[1].toFixed(5)}, ${c[0].toFixed(5)}<small>Mapped trail point; parking approach is not surveyed.</small>`).addTo(endLayer));
+  if(!overview)[[r.coordinates[0],'Start · Lakewood Drive'],[r.coordinates.at(-1),r.label]].forEach(([c,label])=>L.marker(latlng(c),{icon:icon('end-marker','',[22,22])}).bindPopup(`<strong>${label}</strong>${c[1].toFixed(5)}, ${c[0].toFixed(5)}<small>Mapped trail point; parking approach is not surveyed.</small>`).addTo(endLayer));
   let travelled=0,next=1;
   for(let i=1;i<r.coordinates.length;i++){
     const a=r.coordinates[i-1],b=r.coordinates[i],length=milesBetween(a,b);
     while(travelled+length>=next){const t=(next-travelled)/length,c=[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];L.marker(latlng(c),{icon:icon('mile-label',`${next} mi`,[39,22]),interactive:false}).addTo(mileLayer);next++;}
     travelled+=length;
   }
-  $('gpx').href=`bull-creek-${chosen}.gpx`;
-  for(const key of ['ridge','parking']){$(`route-${key}`).classList.toggle('selected',key===chosen);$(`route-${key}`).setAttribute('aria-pressed',String(key===chosen));}
+  if(overview)mileLayer.clearLayers();
+  $('gpx').style.display=overview?'none':'';
+  if(!overview)$('gpx').href=`bull-creek-${chosen}.gpx`;
+  for(const key of ['overview','ridge','parking']){$(`route-${key}`).classList.toggle('selected',key===chosen);$(`route-${key}`).setAttribute('aria-pressed',String(key===chosen));}
   const url=new URL(location.href);url.searchParams.set('route',chosen);history.replaceState(null,'',url);
-  if(fit)map.fitBounds(line.getBounds(),{padding:[28,28]});
+  if(fit)map.fitBounds(routeBounds,{padding:[28,28]});
 }
 
 async function start(){
@@ -69,7 +87,7 @@ async function start(){
     networkLayer=L.geoJSON(data.network,{style:{color:'#778a70',weight:2,opacity:.65},onEachFeature:(f,l)=>l.bindPopup(f.properties.name)}).addTo(map);
     routeLayer=L.layerGroup().addTo(map);mileLayer=L.layerGroup().addTo(map);crossingLayer=L.layerGroup().addTo(map);bailoutLayer=L.layerGroup().addTo(map);endLayer=L.layerGroup().addTo(map);
     data.sources.forEach(s=>{const li=document.createElement('li');const a=document.createElement('a');a.href=s.url;a.target='_blank';a.rel='noopener';a.textContent=s.title;li.append(a,` · ${s.date}`);$('source-list').append(li);});
-    for(const key of ['ridge','parking'])$(`route-${key}`).addEventListener('click',()=>{chosen=key;renderRoute();});
+    for(const key of ['overview','ridge','parking'])$(`route-${key}`).addEventListener('click',()=>{chosen=key;renderRoute();});
     $('fit').addEventListener('click',()=>renderRoute());
     $('show-network').addEventListener('change',e=>e.target.checked?networkLayer.addTo(map):map.removeLayer(networkLayer));
     $('basemap').addEventListener('click',()=>{satelliteOn=!satelliteOn;if(satelliteOn){map.removeLayer(topo);satellite.addTo(map);}else{map.removeLayer(satellite);topo.addTo(map);} $('basemap').textContent=satelliteOn?'Topo map':'Satellite';$('basemap').setAttribute('aria-pressed',String(satelliteOn));});
