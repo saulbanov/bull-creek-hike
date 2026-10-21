@@ -13,4 +13,8 @@
 .map-wrap > #map { position: absolute; inset: 0; height: 100%; z-index: 1; background: transparent; }
 @media (max-width: 900px) { .map-wrap { height: 57vh; min-height: 420px; } }
 @media (max-width: 560px) { .map-wrap { height: 60vh; min-height: 370px; max-height: 570px; } }
+@media (max-width: 560px) {
+  .route-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .route-switch button { min-width: 0; }
+}
 @media print { .map-wrap { height: 400px; } }
